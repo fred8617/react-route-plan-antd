@@ -1,11 +1,12 @@
 import RoutePlan from 'react-route-plan-antd';
-import React from 'react';
+import React,{Fragment} from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import DevTools from 'mobx-react-devtools';
+import './index.css';
 
 const Container=styled.div`
-  
+
 `;
 
 const data={
@@ -83,12 +84,12 @@ const data={
 }
 
 ReactDOM.render(
-  <Container>
+  <Fragment>
     <RoutePlan
       developer={true}
       design={true}
       data={data}
     />
     <DevTools/>
-  </Container>
+  </Fragment>
 ,root)

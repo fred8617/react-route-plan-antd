@@ -11,12 +11,17 @@ import {
   Icon,
   Avatar,
   Spin,
+  Carousel ,
   Popconfirm
 } from 'antd';
 import {observer} from 'mobx-react';
 import {loadAll} from '../../../tool';
 import {SpanLH32} from '../../../styled';
 import styled from 'styled-components';
+
+import SpinImg from './SpinImg';
+
+
 const { Meta } = Card;
 const HCard=styled(Card)`
   cursor: pointer;
@@ -27,18 +32,12 @@ const HCard=styled(Card)`
 `;
 @observer(['store'])
 export default class GooglePalceCard extends Component{
-  streetView=React.createRef();
-  state={
-    loading:true,
-  }
-  imgOnload=()=>{
-    this.setState({loading:false})
-  }
-
+  scrollRef=React.createRef();
   deletePlace=()=>{
     this.props.store.deletePlace(this.props.data);
   }
   async componentDidMount (){
+    this.props.store.setScrollRef(this.scrollRef);
     // await loadAll();
     // const {
     //   google,
@@ -98,14 +97,23 @@ export default class GooglePalceCard extends Component{
     const src=photos&&photos[0].getUrl();
     const hasPhoto=src?true:false;
     const cover=hasPhoto?
-    <Spin spinning={this.state.loading&&hasPhoto}>
-      <img
-        width={250}
-        height={140}
-        src={src}
-        onLoad={this.imgOnload}
-      />
-    </Spin>:null;
+      <Carousel
+        autoplay
+      >
+        {
+          photos.map(
+            (e,i)=>{
+              return (
+                <SpinImg
+                  data={e}
+                  key={i}
+                />
+              )
+            }
+          )
+        }
+      </Carousel>
+            :null;
     return (
       <HCard
         style={{ width: 250, marginTop: 16 }}
@@ -116,7 +124,13 @@ export default class GooglePalceCard extends Component{
             title="确认删除此地点？"
             onConfirm={this.deletePlace}
           >
-            <Icon type="delete" />
+            <span
+              ref={this.scrollRef}
+            >
+              <Icon
+                type="delete"
+              />
+            </span>
           </Popconfirm>
         ]}
         cover={

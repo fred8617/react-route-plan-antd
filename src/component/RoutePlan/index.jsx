@@ -1,4 +1,4 @@
-import React,{Component} from 'react';
+import React,{Component,Fragment} from 'react';
 import {
   Row,
   Col,
@@ -79,47 +79,44 @@ export default class RoutePlan extends Component{
     this.setState({dirty:this.state.dirty++})
   }
   render(){
-    const height=document.documentElement.clientHeight-50;
+    const height=`100%`;
+    const width=`100%`;
     console.log(`render`);
     return (
       <Provider
         store={store}
       >
-        <Spin
-          spinning={store.spinning}
-          tip={store.tip}
-        >
-          <Layout>
-            <Content>
-              <Row>
-                <Col
-                  span={8}
-                  style={{
-                    height,
-                    overflow:`auto`,
-                    background:`white`
-                  }}>
-                  <PlaceLine store={store}/>
-                </Col>
-                <Col span={16}>
-                  <div
-                    ref={this.container}
-                    style={{height}}
-                  >
+        <Fragment>
+          <style>
+            {
+            `
+              .ant-spin-nested-loading,.ant-spin-container{
+                height:100%
+              }
+            `
+            }
+          </style>
+          <Spin
+            spinning={store.spinning}
+            tip={store.tip}
+            style={{height,width}}
+          >
+            <div
+              ref={this.container}
+              style={{height,width}}
+            >
 
-                  </div>
-                  <div style={{display:`none`}} id="infowindow-content">
-                    <img id="place-icon" src="" height="16" width="16"/>
-                    <span id="place-name"  class="title"></span><br/>
-                    Place ID <span id="place-id"></span><br/>
-                    <span id="place-address"></span>
-                  </div>
-                </Col>
-              </Row>
-            </Content>
-          </Layout>
-        </Spin>
-      </Provider>
+            </div>
+            <div style={{display:`none`}} id="infowindow-content">
+              <img id="place-icon" src="" height="16" width="16"/>
+              <span id="place-name"  class="title"></span><br/>
+              Place ID <span id="place-id"></span><br/>
+              <span id="place-address"></span>
+            </div>
+            <PlaceLine store={store}/>
+          </Spin>
+        </Fragment>
+        </Provider>
     )
   }
 }
