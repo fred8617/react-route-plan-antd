@@ -36,6 +36,9 @@ export default class GooglePalceCard extends Component{
   deletePlace=()=>{
     this.props.store.deletePlace(this.props.data);
   }
+  beginEdit=()=>{
+    this.props.store.beginEdit(this.props.data);
+  }
   async componentDidMount (){
     this.props.store.setScrollRef(this.scrollRef);
     // await loadAll();
@@ -118,8 +121,11 @@ export default class GooglePalceCard extends Component{
       <HCard
         style={{ width: 250, marginTop: 16 }}
         actions={[
-          <Icon type="setting" />,
-          <Icon type="edit" />,
+          <Icon
+            type="snippets"
+            theme="outlined"
+            onClick={this.beginEdit}
+          />,
           <Popconfirm
             title="确认删除此地点？"
             onConfirm={this.deletePlace}

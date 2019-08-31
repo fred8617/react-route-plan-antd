@@ -5,6 +5,9 @@ export default class Store {
   @observable legs=[];//路线分支
   @observable spinning=false;//加载旋转
   @observable tip='';
+  @observable trafficMode='DRIVING';//交通方式
+  @observable editing=false;//编辑模式
+  @observable editingData;//编辑的数据
 
   scrollRef;
   directionsService ;
@@ -53,7 +56,8 @@ export default class Store {
     this.scrollRef=ref;
   }
   //计算顺序距离
-  calculateAndDisplayRoute=(oriData,tarData,mode='DRIVING',addData)=>{
+  calculateAndDisplayRoute=(oriData,tarData,actions={})=>{
+    const {type,data}=actions;
     const oriIndex=this.getFIndex(oriData);
     const tarIndex=this.getFIndex(tarData);
     const startIndex=oriIndex+1;
@@ -71,7 +75,7 @@ export default class Store {
       destination:tarData.place.geometry.location,
       waypoints: waypts,
       optimizeWaypoints: true,
-      travelMode: mode
+      travelMode: window.google.maps.TravelMode[this.trafficMode],
     },(response, status)=>{
        if (status === 'OK') {
          oriData.directionsDisplay.setDirections(response);
@@ -81,8 +85,10 @@ export default class Store {
        }else{
          message.error(`路线计算出错`);
          action(()=>{
-           if(addData){//回滚操作
-             this.deletePlace(addData);
+           if(type==`addData`){//回滚操作
+             this.deletePlace(data);
+           }else if(type==`trafficChange`){
+             this.trafficMode=data;
            }
          })()
        }
@@ -109,30 +115,44 @@ export default class Store {
       place,
       place_id,
       marker,
+      todos:[],
       directionsDisplay,
       directionsService:new google.maps.DirectionsService,
     })
     if(this.fData.length>1){
-      this.calculateAndDisplayRoute(this.fData[0],this.fData[this.fData.length-1],undefined,data);
+      this.calculateAndDisplayRoute(this.fData[0],this.fData[this.fData.length-1],{type:`addData`,data});
     }
   }
   @action unshiftData=()=>{
     this.data.unshift({place_id:``})
   }
-  @action addPlaceInput=(index)=>{
+  @action addPlaceInput=(index)=>{//添加一个空的INPUT
     this.data.splice(index+1,null,{place_id:``})
   }
-  @action deletePlace=(data)=>{
+  @action deletePlace=(data)=>{//删除地点
     this.data.remove(data);
     if(this.data.length===0){
       this.data=[{place_id:''}];
       this.legs=[];
     }
-    if(this.fData.length>1){
+    if(this.fData.length>=1){
       this.calculateAndDisplayRoute(this.fData[0],this.fData[this.fData.length-1]);
     }
   }
   @action loadImg=(data)=>{//处理图片加载
     data.loading=true;
+  }
+
+  @action changeTrafficMode=(value)=>{//改变交通方式
+    const oriTraffic=this.trafficMode;
+    this.trafficMode=value;
+    if(this.fData.length>1){
+      this.calculateAndDisplayRoute(this.fData[0],this.fData[this.fData.length-1],{type:`trafficChange`,data:oriTraffic});
+    }
+  }
+
+  @action beginEdit=(data)=>{
+    this.editing=true;
+    this.editingData=data;
   }
 }

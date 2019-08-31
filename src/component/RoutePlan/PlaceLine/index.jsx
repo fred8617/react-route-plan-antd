@@ -9,17 +9,23 @@ import {
   Divider ,
   Affix,
   Badge,
+  BackTop,
+  Icon
 } from 'antd';
 import {observer} from 'mobx-react';
 import styled from 'styled-components';
+import EditingContent from './EditingContent';
 import GooglePlaceInput from './GooglePlaceInput';
 import GooglePlaceCard from './GooglePlaceCard';
 import RouteLegInfo from './RouteLegInfo';
 import Statistic from './Statistic';
+import {observable,action} from 'mobx';
+import './style/iconfont.css';
 const TimelineDetail=Timeline.Item;
 const TimelineContainer=styled.div`
   position: absolute;
-  top: 64px;
+  top: 50%;
+  transform: translateY(-50%);
   height: 90%;
   ${'' /* min-height: 140px; */}
   overflow: auto;
@@ -43,9 +49,16 @@ const TimelineContainer=styled.div`
   left: `20px`,
 }*/
 
+
 @observer(['store'])
 export default class PlaceLine extends Component{
   affixRef;
+  state={
+    ref:null,
+  }
+  componentDidMount(){
+    this.setState({ref:this.affixRef})
+  }
   render(){
     const {
       store:{
@@ -57,104 +70,115 @@ export default class PlaceLine extends Component{
       }
     }=this.props;
     return (
-      <TimelineContainer
-        innerRef={x => {
-          this.affixRef = x
-        }}
-      >
-        <Affix offsetBottom={0} target={()=>this.affixRef}>
-          <Statistic/>
-        </Affix>
-        <Timeline
-          style={{marginLeft:10,marginTop:10}}
-        >
-          {do{
-            if(data[0].place_id){
-              <TimelineDetail
-                dot={
-                  <Button
-                    type="primary"
-                    icon="plus"
-                    shape="circle"
-                    size="small"
-                    onClick={unshiftData}
-                  />
-                }
-              />
-            }
+      <Fragment>
+        <EditingContent/>
+        <TimelineContainer
+          innerRef={x => {
+            this.affixRef = x
           }}
-          {
-            data.map((e,i)=>{
-              const {
+        >
+          <Statistic/>
+          <Timeline
+            style={{marginLeft:10,marginTop:10}}
+          >
+            {do{
+              if(data[0].place_id){
+                <TimelineDetail
+                  dot={
+                    <Button
+                      type="primary"
+                      icon="plus"
+                      shape="circle"
+                      size="small"
+                      onClick={unshiftData}
+                    />
+                  }
+                />
+              }
+            }}
+            {
+              data.map((e,i)=>{
+                const {
                   place_id
-              }=e;
-              return (
-                <Fragment key={i}>
-                  <TimelineDetail
-                    dot={<Badge count={`ABCDEFGHIJKLMNOPQRSTUVWXYZ`.charAt(i)}/>}
-                  >
+                }=e;
+                return (
+                  <Fragment key={i}>
+                    <TimelineDetail
+                      dot={<Badge count={`ABCDEFGHIJKLMNOPQRSTUVWXYZ`.charAt(i)}/>}
+                    >
+                      {do{
+                        if(place_id){
+                          <GooglePlaceCard
+                            data={e}
+                          />
+                        }else{
+                          <GooglePlaceInput
+                            data={e}
+                          />
+                        }
+                      }}
+                    </TimelineDetail>
                     {do{
-                      if(place_id){
-                        <GooglePlaceCard
-                          data={e}
-                        />
-                      }else{
-                        <GooglePlaceInput
-                          data={e}
+                      if(
+                        (place_id&&legs[i])
+                      ){
+                        <TimelineDetail
+                          color="green"
+                        >
+                          <RouteLegInfo
+                            leg={legs[i]}
+                          />
+                        </TimelineDetail>
+                      }else if(
+                        (data[i-1]&&!data[i-1].place_id&&legs[i-1])
+                      ){
+                        <TimelineDetail>
+                          <RouteLegInfo
+                            leg={legs[i-1]}
+                          />
+                        </TimelineDetail>
+                      }
+                    }}
+                    {do{
+                      if(
+                        place_id&&
+                        (
+                          (!data[i+1])||
+                          (data[i+1]&&data[i+1].place_id)
+                        )
+                      ){
+                        <TimelineDetail
+                          dot={
+                            <Button
+                              type="primary"
+                              icon="plus"
+                              shape="circle"
+                              size="small"
+                              onClick={e=>addPlaceInput(i)}
+                            />
+                          }
                         />
                       }
                     }}
-                  </TimelineDetail>
-                  {do{
-                    if(
-                      (place_id&&legs[i])
-                    ){
-                      <TimelineDetail
-                        color="green"
-                      >
-                        <RouteLegInfo
-                          leg={legs[i]}
-                        />
-                      </TimelineDetail>
-                    }else if(
-                      (data[i-1]&&!data[i-1].place_id&&legs[i-1])
-                    ){
-                      <TimelineDetail>
-                        <RouteLegInfo
-                          leg={legs[i-1]}
-                        />
-                      </TimelineDetail>
-                    }
-                  }}
-                  {do{
-                    if(
-                        place_id&&
-                      (
-                        (!data[i+1])||
-                        (data[i+1]&&data[i+1].place_id)
-                      )
-                    ){
-                      <TimelineDetail
-                        dot={
-                          <Button
-                            type="primary"
-                            icon="plus"
-                            shape="circle"
-                            size="small"
-                            onClick={e=>addPlaceInput(i)}
-                          />
-                        }
-                      />
-                    }
-                  }}
-                </Fragment>
-              )
-            })
-          }
+                  </Fragment>
+                )
+              })
+            }
 
-        </Timeline>
-
-      </TimelineContainer>
+          </Timeline>
+        </TimelineContainer>
+        {
+          this.state.ref?
+            <BackTop
+              visibilityHeight={1}
+              style={{left:`23%`}}
+              target={
+                ()=>{
+                  return this.state.ref;
+                }
+              }/>:null
+        }
+      </Fragment>
     )
   }
 }

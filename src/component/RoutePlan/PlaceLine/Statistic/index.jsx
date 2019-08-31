@@ -10,7 +10,9 @@ import {
   Card ,
 } from 'antd';
 import {observer} from 'mobx-react';
+import TrafficMode from './TrafficMode';
 import styled from 'styled-components';
+import {SpanLH32} from  '../../../styled'
 const NumberRow=styled(Row)`
   font-size: 20px;
   text-overflow: ellipsis;
@@ -38,7 +40,18 @@ export default class Statistic extends Component{
       store
     }=this.props;
     return (
-      <Card title="计算结果">
+      <Card title={
+        <Row>
+          <Col span={17}>
+            <SpanLH32>
+              计算结果
+            </SpanLH32>
+          </Col>
+          <Col span={7}>
+            <TrafficMode/>
+          </Col>
+        </Row>
+      }>
         <Card.Grid style={gridStyle}>
           <NumberRow color="red">
             <PlaceNumber store={store}/>
@@ -49,13 +62,13 @@ export default class Statistic extends Component{
           <NumberRow color="green">
             <DistanceNumber  store={store}/>
           </NumberRow>
-          <UnitRow>距离(公里)</UnitRow>
+          <UnitRow>公里</UnitRow>
         </Card.Grid>
         <Card.Grid style={gridStyle}>
           <NumberRow color="blue">
             <TimeNumber store={store}/>
           </NumberRow>
-          <UnitRow>时间(分钟)</UnitRow>
+          <UnitRow>分钟</UnitRow>
         </Card.Grid>
       </Card>
     )
